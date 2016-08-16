@@ -64,6 +64,11 @@ do
   eval POSTGRES_URL_VALUE=\$$POSTGRES_URL
   IFS=':' read DB_USER DB_PASS DB_HOST DB_PORT DB_NAME <<< $(echo $POSTGRES_URL_VALUE | perl -lne 'print "$1:$2:$3:$4:$5" if /^postgres(?:ql)?:\/\/([^:]*):([^@]*)@(.*?):(.*?)\/(.*?)$/')
 
+  # unescape the password
+  DB_PASS=${DB_PASS//+/ }
+  DB_PASS=${DB_PASS//%/\\x}
+  DB_PASS="$(printf '%b' ${DB_PASS})"
+
   DB_MD5_PASS="md5"`echo -n ${DB_PASS}${DB_USER} | md5sum | awk '{print $1}'`
 
   CLIENT_DB_NAME="db${n}"
