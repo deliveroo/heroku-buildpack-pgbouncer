@@ -103,5 +103,12 @@ EOFEOF
   let "n += 1"
 done
 
+# add PGBOUNCER_STATS_USER to users.txt
+PGBOUNCER_STATS_PASSWORD_MD5="md5"`echo -n ${PGBOUNCER_STATS_PASSWORD}${PGBOUNCER_STATS_USER} | md5sum | awk '{print $1}'`
+
+cat >> /app/vendor/pgbouncer/users.txt << EOFEOF
+"$PGBOUNCER_STATS_USER" "$PGBOUNCER_STATS_PASSWORD_MD5"
+EOFEOF
+
 chmod go-rwx /app/vendor/pgbouncer/*
 chmod go-rwx /app/vendor/stunnel/*
