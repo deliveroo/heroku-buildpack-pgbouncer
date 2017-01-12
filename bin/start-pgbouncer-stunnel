@@ -7,6 +7,11 @@ main() {
     exec "$@"
   fi
 
+  if is-enabled "${PGBOUNCER_MONITORING_ENABLED:-1}"; then
+    create-datadog-pgbouncer-integration-config
+    restart-datadog-agent
+  fi
+
   at pgbouncer-enabled
   run-pgbouncer "$@"
 }
@@ -61,6 +66,27 @@ run-pgbouncer() {
     at "kill-aux name=$name pid=${pids[$name]} signal=${signals[$name]}"
     kill -SIGHUP "${pids[$name]}"
   done
+}
+
+create-datadog-pgbouncer-integration-config() {
+
+  if [ -d /app/.apt/opt/datadog-agent/agent/conf.d/ ]; then
+    at create-datadog-pgbouncer-integration-config
+    cat >> /app/.apt/opt/datadog-agent/agent/conf.d/pgbouncer.yaml << EOFEOF
+init_config:
+instances:
+  - database_url:  postgres://${PGBOUNCER_STATS_USER}:${PGBOUNCER_STATS_PASSWORD}@127.0.0.1:6000/pgbouncer
+    tags:
+      - source:${DYNO}
+EOFEOF
+  fi
+}
+
+restart-datadog-agent() {
+  if [ -f /app/bin/restart-datadog-agent.sh ]; then
+    at restart-datadog-agent
+    exec /app/bin/restart-datadog-agent.sh > /dev/null 2>&1 &
+  fi
 }
 
 config-gen() {
