@@ -110,10 +110,6 @@ cat >> /app/vendor/pgbouncer/users.txt << EOFEOF
 "$PGBOUNCER_STATS_USER" "$PGBOUNCER_STATS_PASSWORD_MD5"
 EOFEOF
 
-# set PGBOUNCER_STATS_DATABASE_URL so datadog agent can pull stats
-# check https://github.com/deliveroo/heroku-buildpack-datadog for details on how it is used.
-export PGBOUNCER_STATS_DATABASE_URL=postgres://${PGBOUNCER_STATS_USER}:${PGBOUNCER_STATS_PASSWORD}@127.0.0.1:6000/pgbouncer
-
 chmod go-rwx /app/vendor/pgbouncer/*
 chmod go-rwx /app/vendor/stunnel/*
 
