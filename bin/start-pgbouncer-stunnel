@@ -10,7 +10,6 @@ main() {
   if is-enabled "${PGBOUNCER_MONITORING_ENABLED:-1}"; then
     create-datadog-pgbouncer-integration-config
     restart-datadog-agent
-    exec "$@"
   fi
 
   at pgbouncer-enabled
@@ -70,10 +69,9 @@ run-pgbouncer() {
 }
 
 create-datadog-pgbouncer-integration-config() {
-  at create-datadog-pgbouncer-integration-config
 
   if [ -d /app/.apt/opt/datadog-agent/agent/conf.d/ ]; then
-    at writing-pgbouncer.yaml
+    at create-datadog-pgbouncer-integration-config
     cat >> /app/.apt/opt/datadog-agent/agent/conf.d/pgbouncer.yaml << EOFEOF
 init_config:
 instances:
@@ -85,10 +83,9 @@ EOFEOF
 }
 
 restart-datadog-agent() {
-  at create-datadog-pgbouncer-integration-config
   if [ -f /app/bin/restart-datadog-agent.sh ]; then
-    at restart-datadog-agent.sh
-    exec /app/bin/restart-datadog-agent.sh
+    at restart-datadog-agent
+    exec /app/bin/restart-datadog-agent.sh > /dev/null 2>&1 &
   fi
 }
 
