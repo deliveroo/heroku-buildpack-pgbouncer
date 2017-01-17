@@ -7,14 +7,14 @@ main() {
     exec "$@"
   fi
 
-  at pgbouncer-enabled
-  run-pgbouncer "$@"
-
   if is-enabled "${PGBOUNCER_MONITORING_ENABLED:-1}"; then
     create-datadog-pgbouncer-integration-config
     restart-datadog-agent
     exec "$@"
   fi
+
+  at pgbouncer-enabled
+  run-pgbouncer "$@"
 }
 
 run-pgbouncer() {
