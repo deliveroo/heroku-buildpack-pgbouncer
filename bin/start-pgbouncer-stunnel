@@ -70,7 +70,10 @@ run-pgbouncer() {
 }
 
 create-datadog-pgbouncer-integration-config() {
+  at create-datadog-pgbouncer-integration-config
+
   if [ -d /app/.apt/opt/datadog-agent/agent/conf.d/ ]; then
+    at writing-pgbouncer.yaml
     cat >> /app/.apt/opt/datadog-agent/agent/conf.d/pgbouncer.yaml << EOFEOF
 init_config:
 instances:
@@ -82,7 +85,9 @@ EOFEOF
 }
 
 restart-datadog-agent() {
+  at create-datadog-pgbouncer-integration-config
   if [ -f /app/bin/restart-datadog-agent.sh ]; then
+    at restart-datadog-agent.sh
     exec /app/bin/restart-datadog-agent.sh
   fi
 }
