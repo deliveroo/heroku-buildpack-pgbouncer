@@ -11,14 +11,6 @@ POOL_MODE=${PGBOUNCER_POOL_MODE:-transaction}
 SERVER_RESET_QUERY=${PGBOUNCER_SERVER_RESET_QUERY}
 n=1
 
-# check if the PGBOUNCER MONITORING environment variables are configured correctly.
-if is-enabled "${PGBOUNCER_MONITORING_ENABLED:-0}"; then
-  if ! [[ $PGBOUNCER_STATS_USER ]] || ! [[ $PGBOUNCER_STATS_PASS ]]; then
-    echo "PGBOUNCER_MONITORING_ENABLED environment variable is set but PGBOUNCER_STATS_USER and/or PGBOUNCER_STATS_PASS is missing."
-    exit 1
-  fi
-fi
-
 # if the SERVER_RESET_QUERY and pool mode is session, pgbouncer recommends DISCARD ALL be the default
 # http://pgbouncer.projects.pgfoundry.org/doc/faq.html#_what_should_my_server_reset_query_be
 if [ -z "${SERVER_RESET_QUERY}" ] &&  [ "$POOL_MODE" == "session" ]; then
@@ -117,13 +109,16 @@ EOFEOF
   let "n += 1"
 done
 
+# add PGBOUNCER_STATS_USER to users.txt
 if is-enabled "${PGBOUNCER_MONITORING_ENABLED:-0}"; then
-  # add PGBOUNCER_STATS_USER to users.txt
-  PGBOUNCER_STATS_PASSWORD_MD5="md5"`echo -n ${PGBOUNCER_STATS_PASSWORD}${PGBOUNCER_STATS_USER} | md5sum | awk '{print $1}'`
-
-  cat >> /app/vendor/pgbouncer/users.txt << EOFEOF
-  "$PGBOUNCER_STATS_USER" "$PGBOUNCER_STATS_PASSWORD_MD5"
-  EOFEOF
+  if [ -z "$PGBOUNCER_STATS_USER" ] || [ -z "$PGBOUNCER_STATS_PASSWORD" ]; then
+    echo "PGBOUNCER_MONITORING_ENABLED environment variable is set but PGBOUNCER_STATS_USER and/or PGBOUNCER_STATS_PASSWORD is missing."
+  else
+    PGBOUNCER_STATS_PASSWORD_MD5="md5"`echo -n ${PGBOUNCER_STATS_PASSWORD}${PGBOUNCER_STATS_USER} | md5sum | awk '{print $1}'`
+    cat >> /app/vendor/pgbouncer/users.txt << EOFEOF
+"$PGBOUNCER_STATS_USER" "$PGBOUNCER_STATS_PASSWORD_MD5"
+EOFEOF
+  fi
 fi
 
 chmod go-rwx /app/vendor/pgbouncer/*
