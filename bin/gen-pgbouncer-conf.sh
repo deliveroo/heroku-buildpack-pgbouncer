@@ -85,6 +85,7 @@ do
   cat >> /app/vendor/stunnel/stunnel-pgbouncer.conf << EOFEOF
 [$POSTGRES_URL]
 client = yes
+delay = yes
 protocol = pgsql
 accept  = /tmp/.s.PGSQL.610${n}
 connect = $DB_HOST:$DB_PORT
