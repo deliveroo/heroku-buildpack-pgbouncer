@@ -76,7 +76,10 @@ create-datadog-pgbouncer-integration-config() {
     cat >> /app/.apt/opt/datadog-agent/agent/conf.d/pgbouncer.yaml << EOFEOF
 init_config:
 instances:
-  - database_url:  postgres://${PGBOUNCER_STATS_USER}:${PGBOUNCER_STATS_PASSWORD}@127.0.0.1:6000/pgbouncer
+  - host: localhost
+    port: 6000
+    username: ${PGBOUNCER_STATS_USER}
+    password: ${PGBOUNCER_STATS_PASSWORD}
     tags:
       - source:${DYNO}
 EOFEOF
