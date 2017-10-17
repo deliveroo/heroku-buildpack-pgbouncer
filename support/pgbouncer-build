@@ -1,6 +1,6 @@
 set -e
 
-PGBOUNCER_VERSION=${PGBOUNCER_VERSION-1.7}
+PGBOUNCER_VERSION=${PGBOUNCER_VERSION-1.7.2}
 STUNNEL_VERSION=${STUNNEL_VERSION-5.28}
 
 pgbouncer_tarball_url=https://pgbouncer.github.io/downloads/files/${PGBOUNCER_VERSION}/pgbouncer-${PGBOUNCER_VERSION}.tar.gz
@@ -18,17 +18,4 @@ curl -L $pgbouncer_tarball_url | tar xzv
     make install
 )
 
-tar -zcvf /external/pgbouncer-${PGBOUNCER_VERSION}-heroku.tgz -C /app/vendor/pgbouncer .
-
-echo "Downloading $stunnel_tarball_url"
-curl -L $stunnel_tarball_url | tar xzv
-
-(
-    cd stunnel-${STUNNEL_VERSION}
-    ./configure \
-        --prefix=/app/vendor/stunnel
-    make
-    make install
-)
-
-tar -zcvf /external/stunnel-${STUNNEL_VERSION}.tgz -C /app/vendor/stunnel .
+tar -zcvf /external/pgbouncer-${PGBOUNCER_VERSION}.tgz -C /app/vendor/pgbouncer .

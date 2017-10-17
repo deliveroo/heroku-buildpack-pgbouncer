@@ -10,10 +10,6 @@ set -e
 # clean up leaking environment
 unset GIT_DIR
 
-# config
-PGBOUNCER_VERSION="1.7-heroku"
-STUNNEL_VERSION="5.28"
-
 # parse and derive params
 BUILD_DIR=$1
 CACHE_DIR=$2
@@ -33,33 +29,35 @@ function indent() {
   esac
 }
 
-echo "Using pgbouncer version: ${PGBOUNCER_VERSION}" | indent
-echo "Using stunnel version: ${STUNNEL_VERSION}" | indent
+function package_download() {
+  location="$1"
+
+  mkdir -p $location
+  package="https://s3-eu-west-1.amazonaws.com/roo-apps-binaries-production/pgbouncer-1.7.2.tgz"
+  curl $package -L -s -o - | tar xzf - -C $location
+}
 
 # vendor directories
 VENDORED_PGBOUNCER="vendor/pgbouncer"
-VENDORED_STUNNEL="vendor/stunnel"
 
 # vendor pgbouncer into the slug
 PATH="$BUILD_DIR/$VENDORED_PGBOUNCER/bin:$PATH"
 echo "-----> Fetching and vendoring pgbouncer into slug"
 mkdir -p "$BUILD_DIR/$VENDORED_PGBOUNCER"
-tar xzf pgbouncer-${PGBOUNCER_VERSION}.tgz -C ${BUILD_DIR}/${VENDORED_PGBOUNCER}
+package_download "${BUILD_DIR}/${VENDORED_PGBOUNCER}"
 
-# vendor stunnel into the slug
-PATH="$BUILD_DIR/$VENDORED_STUNNEL/bin:$PATH"
-echo "-----> Fetching and vendoring stunnel into slug"
-mkdir -p "$BUILD_DIR/$VENDORED_STUNNEL"
-tar xzf stunnel-${STUNNEL_VERSION}.tgz -C ${BUILD_DIR}/${VENDORED_STUNNEL}
+chmod +x "$BUILD_DIR/$VENDORED_PGBOUNCER/bin/pgbouncer"
+PGBOUNCER_VERSION=`"$BUILD_DIR/$VENDORED_PGBOUNCER/bin/pgbouncer" --version`
+echo "${PGBOUNCER_VERSION}" | indent
 
 echo "-----> Moving the configuration generation script into app/bin"
 mkdir -p $BUILD_DIR/bin
 cp "$BUILDPACK_DIR/bin/gen-pgbouncer-conf.sh" $BUILD_DIR/bin
 chmod +x $BUILD_DIR/bin/gen-pgbouncer-conf.sh
 
-echo "-----> Moving the start-pgbouncer-stunnel script into app/bin"
+echo "-----> Moving the start-pgbouncer script into app/bin"
 mkdir -p $BUILD_DIR/bin
-cp "$BUILDPACK_DIR/bin/start-pgbouncer-stunnel" $BUILD_DIR/bin/
-chmod +x $BUILD_DIR/bin/start-pgbouncer-stunnel
+cp "$BUILDPACK_DIR/bin/start-pgbouncer" $BUILD_DIR/bin/
+chmod +x $BUILD_DIR/bin/start-pgbouncer
 
-echo "-----> pgbouncer/stunnel done"
+echo "-----> pgbouncer done"

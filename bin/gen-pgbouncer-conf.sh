@@ -17,30 +17,9 @@ if [ -z "${SERVER_RESET_QUERY}" ] &&  [ "$POOL_MODE" == "session" ]; then
   SERVER_RESET_QUERY="DISCARD ALL;"
 fi
 
-# Enable this option to prevent stunnel failure with Amazon RDS when a dyno resumes after sleeping
-if [ -z "${ENABLE_STUNNEL_AMAZON_RDS_FIX}" ]; then
-  AMAZON_RDS_STUNNEL_OPTION=""
-else
-  AMAZON_RDS_STUNNEL_OPTION="options = NO_TICKET"
-fi
-
-mkdir -p /app/vendor/stunnel/var/run/stunnel/
-cat >> /app/vendor/stunnel/stunnel-pgbouncer.conf << EOFEOF
-foreground = yes
-
-options = NO_SSLv2
-options = SINGLE_ECDH_USE
-options = SINGLE_DH_USE
-socket = r:TCP_NODELAY=1
-options = NO_SSLv3
-${AMAZON_RDS_STUNNEL_OPTION}
-ciphers = HIGH:!ADH:!AECDH:!LOW:!EXP:!MD5:!3DES:!SRP:!PSK:@STRENGTH
-debug = ${PGBOUNCER_STUNNEL_LOGLEVEL:-notice}
-EOFEOF
-
 cat >> /app/vendor/pgbouncer/pgbouncer.ini << EOFEOF
 [pgbouncer]
-listen_addr = localhost
+listen_addr = 127.0.0.1
 listen_port = 6000
 auth_type = md5
 auth_file = /app/vendor/pgbouncer/users.txt
@@ -52,17 +31,21 @@ auth_file = /app/vendor/pgbouncer/users.txt
 pool_mode = ${POOL_MODE}
 server_reset_query = ${SERVER_RESET_QUERY}
 max_client_conn = ${PGBOUNCER_MAX_CLIENT_CONN:-100}
-default_pool_size = ${PGBOUNCER_DEFAULT_POOL_SIZE:-1}
+default_pool_size = ${PGBOUNCER_DEFAULT_POOL_SIZE:-5}
 min_pool_size = ${PGBOUNCER_MIN_POOL_SIZE:-0}
 reserve_pool_size = ${PGBOUNCER_RESERVE_POOL_SIZE:-1}
 reserve_pool_timeout = ${PGBOUNCER_RESERVE_POOL_TIMEOUT:-5.0}
-server_lifetime = ${PGBOUNCER_SERVER_LIFETIME:-3600}
-server_idle_timeout = ${PGBOUNCER_SERVER_IDLE_TIMEOUT:-600}
-log_connections = ${PGBOUNCER_LOG_CONNECTIONS:-1}
-log_disconnections = ${PGBOUNCER_LOG_DISCONNECTIONS:-1}
+server_lifetime = ${PGBOUNCER_SERVER_LIFETIME:-1800}
+server_idle_timeout = ${PGBOUNCER_SERVER_IDLE_TIMEOUT:-300}
+log_connections = ${PGBOUNCER_LOG_CONNECTIONS:-0}
+log_disconnections = ${PGBOUNCER_LOG_DISCONNECTIONS:-0}
 log_pooler_errors = ${PGBOUNCER_LOG_POOLER_ERRORS:-1}
 stats_period = ${PGBOUNCER_STATS_PERIOD:-60}
 stats_users = ${PGBOUNCER_STATS_USER:-none}
+pkt_buf = ${PGBOUNCER_PKT_BUF:-4096}
+sbuf_loopcnt = ${PGBOUNCER_SBUF_LOOPCNT:-20}
+server_tls_sslmode = ${PGBOUNCER_SERVER_TLS_SSLMODE:-prefer}
+ignore_startup_parameters = extra_float_digits
 [databases]
 EOFEOF
 
@@ -104,7 +87,7 @@ EOFEOF
 EOFEOF
 
   cat >> /app/vendor/pgbouncer/pgbouncer.ini << EOFEOF
-$CLIENT_DB_NAME= dbname=$DB_NAME port=610${n}
+$CLIENT_DB_NAME= host=$DB_HOST port=$DB_PORT dbname=$DB_NAME
 EOFEOF
 
   let "n += 1"
@@ -123,4 +106,3 @@ EOFEOF
 fi
 
 chmod go-rwx /app/vendor/pgbouncer/*
-chmod go-rwx /app/vendor/stunnel/*

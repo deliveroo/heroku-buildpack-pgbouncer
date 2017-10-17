@@ -9,7 +9,7 @@ PostgreSQL database connections among multiple workers in a dyno. For example,
 10 unicorn workers would be able to share a single database connection, avoiding
 connection limits and Out Of Memory errors on the Postgres server.
 
-It uses [stunnel](http://stunnel.org/) and [pgbouncer](http://wiki.postgresql.org/wiki/PgBouncer).
+It uses [pgbouncer](http://wiki.postgresql.org/wiki/PgBouncer).
 
 
 ## FAQ
@@ -71,7 +71,7 @@ Example usage:
     Run `git push heroku master` to create a new release using these buildpacks.
 
     $ cat Procfile
-    web:    bin/start-pgbouncer-stunnel bundle exec unicorn -p $PORT -c ./config/unicorn.rb -E $RACK_ENV
+    web:    bin/start-pgbouncer bundle exec unicorn -p $PORT -c ./config/unicorn.rb -E $RACK_ENV
     worker: bundle exec rake worker
 
     $ git push heroku master
@@ -85,13 +85,13 @@ Example usage:
     -----> Fetching and vendoring pgbouncer into slug
     -----> Fetching and vendoring stunnel into slug
     -----> Moving the configuration generation script into app/bin
-    -----> Moving the start-pgbouncer-stunnel script into app/bin
+    -----> Moving the start-pgbouncer script into app/bin
     -----> pgbouncer/stunnel done
     -----> Fetching custom git buildpack... done
     ...
 
 The buildpack will install and configure pgbouncer and stunnel to connect to
-`DATABASE_URL` over a SSL connection. Prepend `bin/start-pgbouncer-stunnel`
+`DATABASE_URL` over a SSL connection. Prepend `bin/start-pgbouncer`
 to any process in the Procfile to run pgbouncer and stunnel alongside that process.
 
 
@@ -106,7 +106,7 @@ It is possible to connect to multiple databases through pgbouncer by setting
     HEROKU_POSTGRESQL_ROSE_URL=postgres://u9dih9htu2t3ll:password@ec2-107-20-228-134.compute-1.amazonaws.com:5482/db6h3bkfuk5430
     DATABASE_URL=postgres://uf2782hv7b3uqe:password@ec2-50-19-210-113.compute-1.amazonaws.com:5622/deamhhcj6q0d31
 
-    ~ $ bin/start-pgbouncer-stunnel env # filtered for brevity
+    ~ $ bin/start-pgbouncer env # filtered for brevity
     HEROKU_POSTGRESQL_ROSE_URL=postgres://u9dih9htu2t3ll:password@127.0.0.1:6000/db2
     DATABASE_URL=postgres://uf2782hv7b3uqe:password@127.0.0.1:6000/db1
 
@@ -129,7 +129,7 @@ and [stunnel](http://linux.die.net/man/8/stunnel) configurations to see what set
 
 - `PGBOUNCER_POOL_MODE` Default is transaction
 - `PGBOUNCER_MAX_CLIENT_CONN` Default is 100
-- `PGBOUNCER_DEFAULT_POOL_SIZE` Default is 1
+- `PGBOUNCER_DEFAULT_POOL_SIZE` Default is 5
 - `PGBOUNCER_MIN_POOL_SIZE` Default is 0
 - `PGBOUNCER_RESERVE_POOL_SIZE` Default is 1
 - `PGBOUNCER_RESERVE_POOL_TIMEOUT` Default is 5.0 seconds
