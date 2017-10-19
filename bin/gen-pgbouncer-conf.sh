@@ -44,7 +44,7 @@ stats_period = ${PGBOUNCER_STATS_PERIOD:-60}
 stats_users = ${PGBOUNCER_STATS_USER:-none}
 pkt_buf = ${PGBOUNCER_PKT_BUF:-4096}
 sbuf_loopcnt = ${PGBOUNCER_SBUF_LOOPCNT:-20}
-server_tls_sslmode = ${PGBOUNCER_SERVER_TLS_SSLMODE:-prefer}
+server_tls_sslmode = ${PGBOUNCER_SERVER_TLS_SSLMODE:-require}
 ignore_startup_parameters = extra_float_digits
 [databases]
 EOFEOF
