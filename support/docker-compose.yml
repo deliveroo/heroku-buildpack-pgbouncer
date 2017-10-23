@@ -1,8 +1,7 @@
 pgbouncer-builder:
   build: .
   environment:
-    PGBOUNCER_VERSION: "1.7"
-    STUNNEL_VERSION: "5.28"
+    PGBOUNCER_VERSION: "1.7.2"
   command: bash -c './pgbouncer-build'
   volumes:
     - ..:/external
