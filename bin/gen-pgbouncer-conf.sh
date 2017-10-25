@@ -35,17 +35,16 @@ default_pool_size = ${PGBOUNCER_DEFAULT_POOL_SIZE:-5}
 min_pool_size = ${PGBOUNCER_MIN_POOL_SIZE:-0}
 reserve_pool_size = ${PGBOUNCER_RESERVE_POOL_SIZE:-1}
 reserve_pool_timeout = ${PGBOUNCER_RESERVE_POOL_TIMEOUT:-5.0}
-server_lifetime = ${PGBOUNCER_SERVER_LIFETIME:-1800}
-server_idle_timeout = ${PGBOUNCER_SERVER_IDLE_TIMEOUT:-300}
-log_connections = ${PGBOUNCER_LOG_CONNECTIONS:-0}
-log_disconnections = ${PGBOUNCER_LOG_DISCONNECTIONS:-0}
+server_lifetime = ${PGBOUNCER_SERVER_LIFETIME:-3600}
+server_idle_timeout = ${PGBOUNCER_SERVER_IDLE_TIMEOUT:-600}
+log_connections = ${PGBOUNCER_LOG_CONNECTIONS:-1}
+log_disconnections = ${PGBOUNCER_LOG_DISCONNECTIONS:-1}
 log_pooler_errors = ${PGBOUNCER_LOG_POOLER_ERRORS:-1}
 stats_period = ${PGBOUNCER_STATS_PERIOD:-60}
 stats_users = ${PGBOUNCER_STATS_USER:-none}
 pkt_buf = ${PGBOUNCER_PKT_BUF:-4096}
 sbuf_loopcnt = ${PGBOUNCER_SBUF_LOOPCNT:-20}
 server_tls_sslmode = ${PGBOUNCER_SERVER_TLS_SSLMODE:-require}
-ignore_startup_parameters = extra_float_digits
 [databases]
 EOFEOF
 
