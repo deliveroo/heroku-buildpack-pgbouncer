@@ -17,7 +17,28 @@ if [ -z "${SERVER_RESET_QUERY}" ] &&  [ "$POOL_MODE" == "session" ]; then
   SERVER_RESET_QUERY="DISCARD ALL;"
 fi
 
-cat >> /app/vendor/pgbouncer/pgbouncer.ini << EOFEOF
+# Enable this option to prevent stunnel failure with Amazon RDS when a dyno resumes after sleeping
+if [ -z "${ENABLE_STUNNEL_AMAZON_RDS_FIX}" ]; then
+  AMAZON_RDS_STUNNEL_OPTION=""
+else
+  AMAZON_RDS_STUNNEL_OPTION="options = NO_TICKET"
+fi
+
+mkdir -p /app/vendor/stunnel/var/run/stunnel/
+cat > /app/vendor/stunnel/stunnel-pgbouncer.conf << EOFEOF
+foreground = yes
+
+options = NO_SSLv2
+options = SINGLE_ECDH_USE
+options = SINGLE_DH_USE
+socket = r:TCP_NODELAY=1
+options = NO_SSLv3
+${AMAZON_RDS_STUNNEL_OPTION}
+ciphers = HIGH:!ADH:!AECDH:!LOW:!EXP:!MD5:!3DES:!SRP:!PSK:@STRENGTH
+debug = ${PGBOUNCER_STUNNEL_LOGLEVEL:-notice}
+EOFEOF
+
+cat > /app/vendor/pgbouncer/pgbouncer.ini << EOFEOF
 [pgbouncer]
 listen_addr = 127.0.0.1
 listen_port = 6000
@@ -45,6 +66,8 @@ stats_users = ${PGBOUNCER_STATS_USER:-none}
 pkt_buf = ${PGBOUNCER_PKT_BUF:-4096}
 sbuf_loopcnt = ${PGBOUNCER_SBUF_LOOPCNT:-20}
 server_tls_sslmode = ${PGBOUNCER_SERVER_TLS_SSLMODE:-require}
+ignore_startup_parameters = ${PGBOUNCER_IGNORE_STARTUP_PARAMETERS}
+
 [databases]
 EOFEOF
 

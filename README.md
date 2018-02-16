@@ -64,7 +64,7 @@ Example usage:
     Buildpack added. Next release on pgbouncer-test-app will use https://github.com/heroku/heroku-buildpack-pgbouncer.
     Run `git push heroku master` to create a new release using this buildpack.
 
-    $ heroku buildpacks:add https://github.com/heroku/heroku-buildpack-ruby
+    $ heroku buildpacks:add heroku/ruby
     Buildpack added. Next release on pgbouncer-test-app will use:
       1. https://github.com/heroku/heroku-buildpack-pgbouncer
       2. https://github.com/heroku/heroku-buildpack-ruby
@@ -122,8 +122,9 @@ your leader as a read-only replica, potentially doubling your connection count.
 
 ## Tweak settings
 Some settings are configurable through app config vars at runtime. Refer to the appropriate documentation for
-[pgbouncer](http://pgbouncer.projects.pgfoundry.org/doc/config.html#_generic_settings)
-configurations to see what settings are right for you.
+
+[pgbouncer](https://pgbouncer.github.io/config.html)
+and [stunnel](http://linux.die.net/man/8/stunnel) configurations to see what settings are right for you.
 
 - `PGBOUNCER_POOL_MODE` Default is transaction
 - `PGBOUNCER_MAX_CLIENT_CONN` Default is 100
@@ -140,5 +141,9 @@ configurations to see what settings are right for you.
 - `PGBOUNCER_LOG_POOLER_ERRORS` Default is 1
 - `PGBOUNCER_STATS_PERIOD` Default is 60
 - `PGBOUNCER_SERVER_RESET_QUERY` Default is empty when pool mode is transaction, and "DISCARD ALL;" when session.
+- `PGBOUNCER_STUNNEL_LOGLEVEL` Default is notice (5). Set this var to pass a syslog level name or number value to stunnel.  This corresponds to the stunnel global configuration option called "debug".
+- `ENABLE_STUNNEL_AMAZON_RDS_FIX` Default is unset. Set this var if you are connecting to an Amazon RDS instance of postgres.
+ Adds `options = NO_TICKET` which is documented to make stunnel work correctly after a dyno resumes from sleep. Otherwise, the dyno will lose connectivity to RDS.
+- `PGBOUNCER_IGNORE_STARTUP_PARAMETERS` Adds parameters to ignore when pgbouncer is starting. Some postgres libraries, like Go's pq, append this parameter, making it impossible to use this buildpack. Default is empty and the most common ignored parameter is `extra_float_digits`. Multiple parameters can be seperated via commas. Example: `PGBOUNCER_IGNORE_STARTUP_PARAMETERS="extra_float_digits, some_other_param"`
 
 For more info, see [CONTRIBUTING.md](CONTRIBUTING.md)
